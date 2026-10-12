@@ -1,0 +1,5 @@
+Major = 1
+Middle = 0
+Minor = 0
+Build Date = 2022/10/11-ZKDK
+Description = Initial Development.

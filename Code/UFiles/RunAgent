@@ -1,0 +1,56 @@
+#!/bin/sh
+
+#########################################
+## system
+#########################################
+## Print Version
+echo "Current ZWRTU Agent Version :"
+cat /ZWRTUAgent/Version.txt
+echo 
+
+#########################################
+## Register Drivers
+
+#########################################
+## Halow
+cp -arf /mnt/mmcblk0p2/rdisk/run /usr/nrc-halow/
+chmod -R 755 /usr/nrc-halow/run
+echo "Halow : Package becomes ready"
+
+#########################################
+## haveged
+if [ -f "/app/rdisk/haveged_lib.tar" ]; then
+	tar -xf /app/rdisk/haveged_lib.tar -C /usr
+	chmod -R 755 /usr/haveged
+	. /usr/haveged/haveged_app
+	LD_LIBRARY_PATH=/usr/haveged/.libs
+fi
+
+if [ -f "/ZWRTUAgent/KDN_LIB.h" ]; then
+	cp -arf /ZWRTUAgent/KDN_LIB.h /
+	LD_LIBRARY_PATH=/usr/haveged/lib32:$LD_LIBRARY_PATH
+fi
+
+#########################################
+## PD
+if [ -f "/app/rdisk/libnoise.so" ]; then
+	chmod -R 755 /app/rdisk/libnoise.so
+	cp -arf /app/rdisk/libnoise.so /usr/lib
+fi
+
+#########################################
+## set $PATH
+PATH=$PATH:/usr/local/bin:/usr/local/sbin
+LD_LIBRARY_PATH=/usr/lib:/lib:/usr/local/lib:$LD_LIBRARY_PATH
+export PATH LD_LIBRARY_PATH
+
+#########################################
+## Run Agents
+/ZWRTUAgent/HWManager &
+sleep 3
+/ZWRTUAgent/UpgradeAgent &
+#/ZWRTUAgent/TelnetD > /dev/null &
+#/ZWRTUAgent/vftpd > /dev/null &
+/ZWRTUAgent/OM2MAgent &
+/ZWRTUAgent/TCPPDAgent &
+/ZWRTUAgent/CLIAgent
